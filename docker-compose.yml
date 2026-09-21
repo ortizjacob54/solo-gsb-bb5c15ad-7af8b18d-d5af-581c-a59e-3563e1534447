@@ -1,0 +1,24 @@
+services:
+  kerf-api:
+    build: .
+    image: kerf-compensation-api:latest
+    container_name: kerf-compensation-api
+    ports:
+      # 宿主机端口:容器端口；可用 APP_PORT 调整容器内监听端口
+      - "8000:8000"
+    environment:
+      APP_HOST: "0.0.0.0"
+      APP_PORT: "8000"
+      # 单条轮廓最大顶点数（防超大输入），按需调整
+      MAX_CONTOUR_POINTS: "100000"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen(f\"http://127.0.0.1:{os.environ.get('APP_PORT','8000')}/health\", timeout=2).status==200 else 1)"
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
